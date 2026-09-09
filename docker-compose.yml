@@ -1,0 +1,34 @@
+# Local development. Postgres is NOT here - it is remote on Supabase, which is
+# also what production uses, so there is no dev/prod database drift.
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      FRESHDESK_DOMAIN: ${FRESHDESK_DOMAIN:-}
+      FRESHDESK_API_KEY: ${FRESHDESK_API_KEY:-}
+      JIRA_BASE_URL: ${JIRA_BASE_URL:-}
+      JIRA_EMAIL: ${JIRA_EMAIL:-}
+      JIRA_API_TOKEN: ${JIRA_API_TOKEN:-}
+      JIRA_PROJECT_KEY: ${JIRA_PROJECT_KEY:-SUP}
+      JIRA_ACCOUNT_ID: ${JIRA_ACCOUNT_ID:-}
+      MCP_ENABLED: ${MCP_ENABLED:-true}
+      MCP_URL: http://mcp-server:8090/mcp
+    depends_on:
+      - mcp-server
+
+  mcp-server:
+    build: ./mcp-server
+    environment:
+      DATABASE_URL: ${MCP_DATABASE_URL}
+      MCP_PORT: 8090
+    # Port intentionally not published: only the app needs to reach it.
+    # Uncomment to inspect with @modelcontextprotocol/inspector.
+    # ports:
+    #   - "8090:8090"

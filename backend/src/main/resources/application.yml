@@ -1,0 +1,58 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  application:
+    name: support-triage
+  datasource:
+    # Supabase SESSION pooler on port 5432 (NOT 6543 - transaction mode
+    # breaks prepared statements). The direct db.<ref>.supabase.co host is
+    # IPv6-only and will not resolve from most machines or from Render.
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/postgres}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+    hikari:
+      maximum-pool-size: 5
+      connection-timeout: 30000
+  web:
+    resources:
+      static-locations: classpath:/static/
+
+logging:
+  level:
+    com.matiks.support: INFO
+
+# ---------------------------------------------------------------------
+# LLM providers. Model IDs live HERE, never in code: free-tier rosters
+# get retired without notice and a redeploy must not be a code change.
+# Blank keys are fine - the router degrades to the next provider, and
+# finally to keyword-only search.
+# ---------------------------------------------------------------------
+llm:
+  gemini:
+    api-key: ${GEMINI_API_KEY:}
+    model: ${GEMINI_MODEL:gemini-3.6-flash}
+    base-url: https://generativelanguage.googleapis.com/v1beta/models
+  groq:
+    api-key: ${GROQ_API_KEY:}
+    model: ${GROQ_MODEL:openai/gpt-oss-120b}
+    base-url: https://api.groq.com/openai/v1/chat/completions
+  # Below this confidence a knowledge-base match is REJECTED and demoted
+  # to a general explanation. Being confidently wrong is the worst
+  # failure this system can show, so the floor is enforced in Java.
+  match-confidence-floor: 0.70
+
+mcp:
+  enabled: ${MCP_ENABLED:false}
+  url: ${MCP_URL:http://localhost:8090/mcp}
+
+freshdesk:
+  domain: ${FRESHDESK_DOMAIN:}
+  api-key: ${FRESHDESK_API_KEY:}
+
+jira:
+  base-url: ${JIRA_BASE_URL:}
+  email: ${JIRA_EMAIL:}
+  api-token: ${JIRA_API_TOKEN:}
+  project-key: ${JIRA_PROJECT_KEY:SUP}
+  account-id: ${JIRA_ACCOUNT_ID:}
